@@ -1,0 +1,48 @@
+#!/usr/bin/env python
+'''
+A CLI tool to explore the openweather API
+'''
+import sys
+import json
+import requests
+from datetime import datetime
+
+API_KEY = "9b261da09793707fb815e0108aa5b43d"    # From openweathermap.org username: bernpuc@gmail.com
+LOCATION = "q=naugatuck,us"
+LOCATION = "id=4839222"
+#LOCATION = "q=sanfrancisco,us"
+#LOCATION = "q=newyork,us"
+#LOCATION = "q=london,gb"
+WEATHER_URL = "http://api.openweathermap.org/"
+QUERY_STRING = "data/2.5/weather?%s&mode=json&units=imperial" % LOCATION
+APIID = "&APIID=%s" % API_KEY
+
+# Get the weather data
+r = requests.get(WEATHER_URL+QUERY_STRING+APIID)
+if r.status_code != 200:
+    sys.stderr.write("HTML error: %s\n" % r.status_code)
+    sys.exit(1)
+
+# Convert the serialized json response into a dictionary
+data = r.json()
+#print json.dumps(data, indent=2, separators=(',',': '))
+sys.stdout.write('\n')
+sys.stdout.write('Current conditions in \033[1m%s %s\033[0m are:\n' % (data['name'], data['sys']['country']))
+sys.stdout.write(data['weather'][0]['main']+'\n')
+sys.stdout.write(data['weather'][0]['description']+'\n')
+sys.stdout.write('Temperature is %s F (Range %s to %s)\n' % (str(data['main']['temp']),str(data['main']['temp_min']),str(data['main']['temp_max'])))
+sys.stdout.write('Last update was %s ' % (datetime.fromtimestamp(data['dt']).strftime('%H:%M:%S')))
+sys.stdout.write('Current time is %s\n' % (datetime.now().strftime('%H:%M:%S')))
+
+'''
+5 day Forecast
+data['list'] list of structures 5 days X 8 = 40 items.  Each item is for a 3 hour interval.
+'''
+#QUERY_STRING = "data/2.5/forecast?%s&mode=json&units=imperial" % LOCATION
+#print WEATHER_URL+QUERY_STRING+APIID
+#r = requests.get(WEATHER_URL+QUERY_STRING+APIID)
+#data = r.json()
+#print json.dumps(data, indent=2, separators=(',',': '))
+#write the data to a file so we can write parser while not online.
+#fp = open("./forecast.json", "w")
+#json.dump(data,fp)
