@@ -9,17 +9,18 @@ from datetime import datetime
 
 API_KEY = "9b261da09793707fb815e0108aa5b43d"    # From openweathermap.org username: bernpuc@gmail.com
 LOCATION = "q=naugatuck,us"
-LOCATION = "id=4839222"
+#LOCATION = "id=4839222"
 #LOCATION = "q=sanfrancisco,us"
 #LOCATION = "q=newyork,us"
 #LOCATION = "q=london,gb"
 WEATHER_URL = "http://api.openweathermap.org/"
 QUERY_STRING = "data/2.5/weather?%s&mode=json&units=imperial" % LOCATION
-APIID = "&APIID=%s" % API_KEY
-
+APPID = "&APPID=%s" % API_KEY
+MYURL = WEATHER_URL+QUERY_STRING+APPID
 # Get the weather data
-r = requests.get(WEATHER_URL+QUERY_STRING+APIID)
+r = requests.get(MYURL)
 if r.status_code != 200:
+    sys.stderr.write("URL: %s\n" % MYURL)
     sys.stderr.write("HTML error: %s\n" % r.status_code)
     sys.exit(1)
 
@@ -39,8 +40,8 @@ sys.stdout.write('Current time is %s\n' % (datetime.now().strftime('%H:%M:%S')))
 data['list'] list of structures 5 days X 8 = 40 items.  Each item is for a 3 hour interval.
 '''
 #QUERY_STRING = "data/2.5/forecast?%s&mode=json&units=imperial" % LOCATION
-#print WEATHER_URL+QUERY_STRING+APIID
-#r = requests.get(WEATHER_URL+QUERY_STRING+APIID)
+#print WEATHER_URL+QUERY_STRING+APPID
+#r = requests.get(WEATHER_URL+QUERY_STRING+APPID)
 #data = r.json()
 #print json.dumps(data, indent=2, separators=(',',': '))
 #write the data to a file so we can write parser while not online.
