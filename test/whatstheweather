@@ -19,10 +19,8 @@ APPID = "&APPID=%s" % API_KEY
 MYURL = WEATHER_URL+QUERY_STRING+APPID
 # Get the weather data
 r = requests.get(MYURL)
-if r.status_code != 200:
-    sys.stderr.write("URL: %s\n" % MYURL)
-    sys.stderr.write("HTML error: %s\n" % r.status_code)
-    sys.exit(1)
+if r.status_code != requests.codes.ok:
+    r.raise_for_status()
 
 # Convert the serialized json response into a dictionary
 data = r.json()
@@ -31,19 +29,28 @@ sys.stdout.write('\n')
 sys.stdout.write('Current conditions in \033[1m%s %s\033[0m are:\n' % (data['name'], data['sys']['country']))
 sys.stdout.write(data['weather'][0]['main']+'\n')
 sys.stdout.write(data['weather'][0]['description']+'\n')
-sys.stdout.write('Temperature is %s F (Range %s to %s)\n' % (str(data['main']['temp']),str(data['main']['temp_min']),str(data['main']['temp_max'])))
-sys.stdout.write('Last update was %s ' % (datetime.fromtimestamp(data['dt']).strftime('%H:%M:%S')))
-sys.stdout.write('Current time is %s\n' % (datetime.now().strftime('%H:%M:%S')))
+sys.stdout.write('Temperature is %s F (Range %s to %s)\n' % (str(data['main']['temp']), str(data['main']['temp_min']), str(data['main']['temp_max'])))
+#sys.stdout.write('Last update was %s ' % (datetime.fromtimestamp(data['dt']).strftime('%H:%M:%S')))
+#sys.stdout.write('Current time is %s\n' % (datetime.now().strftime('%H:%M:%S')))
+end = datetime.now()
+start = datetime.fromtimestamp(data['dt'])
+diff = end - start
+sys.stdout.write("Updated %s minutes ago (%s)\n" % (int(round(diff.total_seconds()/60)), datetime.fromtimestamp(data['dt']).strftime('%H:%M:%S')))
 
 '''
 5 day Forecast
 data['list'] list of structures 5 days X 8 = 40 items.  Each item is for a 3 hour interval.
 '''
-#QUERY_STRING = "data/2.5/forecast?%s&mode=json&units=imperial" % LOCATION
+QUERY_STRING = "data/2.5/forecast?%s&mode=json&units=imperial" % LOCATION
 #print WEATHER_URL+QUERY_STRING+APPID
-#r = requests.get(WEATHER_URL+QUERY_STRING+APPID)
-#data = r.json()
+r = requests.get(WEATHER_URL+QUERY_STRING+APPID)
+if r.status_code != requests.codes.ok:
+    r.raise_for_status()
+data = r.json()
 #print json.dumps(data, indent=2, separators=(',',': '))
 #write the data to a file so we can write parser while not online.
-#fp = open("./forecast.json", "w")
-#json.dump(data,fp)
+fp = open("./forecast.json", "w")
+json.dump(data, fp, indent=2, separators=(',', ': '))
+sys.stdout.write("5 Day Forecast:\n\n")
+for item in data['list']:
+    sys.stdout.write("%s %10s-%-20s %s\n" % (item["dt_txt"], item["weather"][0]["main"], item["weather"][0]["description"], item["main"]["temp"]))
